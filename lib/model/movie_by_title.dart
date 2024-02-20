@@ -26,13 +26,19 @@ class MovieByTitle {
 }
 
 class MovieResult {
-  final String title;
+  final String? title;
+  final int? year;
+  final String? imdbId;
 
   MovieResult({
     required this.title,
+    required this.year,
+    required this.imdbId,
   });
 
   factory MovieResult.fromJson(Map<String, dynamic> json) => MovieResult(
         title: json["title"],
+        year: json["year"],
+        imdbId: json["imdb_id"],
       );
 }

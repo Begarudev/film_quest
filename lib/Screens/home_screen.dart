@@ -1,4 +1,4 @@
-import 'package:film_quest/riverpod.dart';
+import 'package:film_quest/services/riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,7 +13,7 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: const SearchBar(),
+        title: const SearchBarCustom(),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(vertical: 200.0),
@@ -41,13 +41,31 @@ class HomeScreen extends ConsumerWidget {
                       child: Column(
                         children: [
                           Text(movie[index].title),
-                          Text(movie[index].year),
+                          Row(children: [
+                            Text(movie[index].year),
+                            IconButton(
+                                onPressed: () {
+                                  ref
+                                      .watch(movie[index]
+                                          .likeStateProvider
+                                          .notifier)
+                                      .update((state) => !state);
+                                },
+                                icon: ref.watch(movie[index].likeStateProvider)
+                                    ? const Icon(
+                                        Icons.thumb_up_sharp,
+                                        color: Colors.blue,
+                                      )
+                                    : const Icon(Icons.thumb_up_sharp))
+                          ]),
                           // Text(movie[index].imdbId),
                           movieImage.when(
                               data: (data) {
                                 return Expanded(
                                   child: Image.network(
-                                    data.poster,
+                                    data.poster != null
+                                        ? data.poster!
+                                        : 'https://www.indieactivity.com/wp-content/uploads/2022/03/File-Not-Found-Poster.png',
                                     errorBuilder: (context, error, stackTrace) {
                                       return Image.network(
                                           'https://www.indieactivity.com/wp-content/uploads/2022/03/File-Not-Found-Poster.png',
@@ -81,37 +99,15 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-class SearchBar extends ConsumerStatefulWidget {
-  const SearchBar({
+class SearchBarCustom extends ConsumerWidget {
+  const SearchBarCustom({
     super.key,
   });
 
   @override
-  ConsumerState<SearchBar> createState() => _SearchBarState();
-}
-
-class _SearchBarState extends ConsumerState<SearchBar> {
-  @override
-  Widget build(BuildContext context) {
-    Iterable<Widget> getSuggestions(SearchController controller) {
-      final String input = controller.value.text;
-      // final String input = ref.watch(searchInputTextProvider.notifier).update((state) => controller.text);
-
-      final moviesByName = ref.watch(getMoviesByNameProvider(input));
-      return moviesByName.when(
-          data: (data) {
-            return data.movieResults.map((e) => Text(e.title));
-          },
-          error: (error, stackTrace) => [Center(child: Text('Error: $error'))],
-          loading: () => [const Center(child: CircularProgressIndicator())]);
-    }
-
-    return SearchAnchor.bar(
-      // onTap: () => getSuggestions(controller),
-      isFullScreen: true,
-      barHintText: "Search Your Favourite Movie...",
-      barLeading: const Icon(Icons.search),
-      suggestionsBuilder: (context, controller) => getSuggestions(controller),
+  Widget build(BuildContext context, WidgetRef ref) {
+    return TextField(
+      onTap: () => context.push("/searchPage"),
     );
   }
 }

@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 NowPlayingMovie nowPlayingMovieFromJson(String str) =>
     NowPlayingMovie.fromJson(json.decode(str));
 
@@ -37,6 +39,7 @@ class MovieResult {
   final String title;
   final String year;
   final String imdbId;
+  final likeStateProvider = StateProvider((ref) => false);
 
   MovieResult({
     required this.title,

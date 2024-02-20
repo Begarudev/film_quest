@@ -1,11 +1,11 @@
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:film_quest/riverpod.dart';
+import 'package:film_quest/services/riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_stars/flutter_rating_stars.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'model/movie_by_id.dart';
+import '../model/movie_by_id.dart';
 
 class MovieDetails extends ConsumerWidget {
   const MovieDetails({super.key});
@@ -29,13 +29,17 @@ class MovieDetails extends ConsumerWidget {
             CarouselSlider(
                 items: [
                   images.when(
-                      data: (data) => Image.network(data.poster),
+                      data: (data) => Image.network(data.poster != null
+                          ? data.poster!
+                          : 'https://www.indieactivity.com/wp-content/uploads/2022/03/File-Not-Found-Poster.png'),
                       error: (error, stackTrace) =>
                           Center(child: Text('Error: $error')),
                       loading: () =>
                           const Center(child: CircularProgressIndicator())),
                   images.when(
-                      data: (data) => Image.network(data.fanart),
+                      data: (data) => Image.network(data.fanart != null
+                          ? data.fanart!
+                          : 'https://www.indieactivity.com/wp-content/uploads/2022/03/File-Not-Found-Poster.png'),
                       error: (error, stackTrace) =>
                           Center(child: Text('Error: $error')),
                       loading: () =>

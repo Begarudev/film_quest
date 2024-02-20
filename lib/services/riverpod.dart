@@ -7,27 +7,6 @@ import 'package:film_quest/model/now_playing_movie.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
-import 'model/trending_movies.dart';
-
-final trendingMovieProvider = FutureProvider(
-  (ref) {
-    {
-      var headers = {
-        'Type': 'get-trending-movies',
-        'X-RapidAPI-Key': '40941a0985msh8632212e75cdac2p1afb8bjsn44752a7da9f0',
-        'X-RapidAPI-Host': 'movies-tv-shows-database.p.rapidapi.com',
-      };
-
-      var uri = Uri.https(
-          'movies-tv-shows-database.p.rapidapi.com', '/', {'page': '1'});
-
-      return http.get(uri, headers: headers).then((value) =>
-          TrendingMovie.fromJson(
-              jsonDecode(value.body) as Map<String, dynamic>));
-    }
-  },
-);
-
 final movieImagesProvider = FutureProvider.family<MovieImage, String>(
   (ref, movieId) {
     {
@@ -100,5 +79,27 @@ final getMoviesByIDProvider =
         MovieById.fromJson(jsonDecode(value.body) as Map<String, dynamic>));
   }
 });
+
+class MovieRepository {
+  MovieRepository({required this.movieTitle});
+
+  final String movieTitle;
+  Future<MovieByTitle> fetchMoviesData() {
+    {
+      var headers = {
+        'Type': 'get-movies-by-title',
+        'X-RapidAPI-Key': '40941a0985msh8632212e75cdac2p1afb8bjsn44752a7da9f0',
+        'X-RapidAPI-Host': 'movies-tv-shows-database.p.rapidapi.com',
+      };
+
+      var uri = Uri.https('movies-tv-shows-database.p.rapidapi.com', '/',
+          {'title': movieTitle});
+
+      return http.get(uri, headers: headers).then((value) =>
+          MovieByTitle.fromJson(
+              jsonDecode(value.body) as Map<String, dynamic>));
+    }
+  }
+}
 
 final searchInputTextProvider = StateProvider((ref) => "");

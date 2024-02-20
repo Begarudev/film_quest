@@ -16,8 +16,8 @@ class MovieById {
   final String? imdbRating;
   final String? youtubeTrailerKey;
   final String? rated;
-  final String? status;
-  final String? statusMessage;
+  final String status;
+  final String statusMessage;
 
   MovieById({
     required this.title,

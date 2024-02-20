@@ -8,10 +8,10 @@ MovieImage movieImageFromJson(String str) =>
     MovieImage.fromJson(json.decode(str));
 
 class MovieImage {
-  final String title;
-  final String imdb;
-  final String poster;
-  final String fanart;
+  final String? title;
+  final String? imdb;
+  final String? poster;
+  final String? fanart;
   final String status;
   final String statusMessage;
 

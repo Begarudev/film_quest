@@ -1,7 +1,9 @@
-import 'package:film_quest/home_screen.dart';
-import 'package:film_quest/movie_details.dart';
+import 'package:film_quest/Screens/home_screen.dart';
+import 'package:film_quest/Screens/movie_details.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import 'search_screen.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
@@ -26,5 +28,9 @@ final _router = GoRouter(
       path: '/page2',
       builder: (context, state) => const MovieDetails(),
     ),
+    GoRoute(
+      path: '/searchPage',
+      builder: (context, state) => const SearchScreen(),
+    )
   ],
 );
