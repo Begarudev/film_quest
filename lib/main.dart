@@ -16,8 +16,14 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return const MaterialApp(
-      home: SplashScreen(),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.black,
+              brightness: Brightness.dark,
+              onPrimary: Colors.red)),
+      home: const SplashScreen(),
     );
   }
 }

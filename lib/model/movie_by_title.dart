@@ -4,7 +4,7 @@ MovieByTitle movieByTitleFromJson(String str) =>
     MovieByTitle.fromJson(json.decode(str));
 
 class MovieByTitle {
-  final List<MovieResult> movieResults;
+  final List<MovieResult>? movieResults;
   final int? searchResults;
   final String status;
   final String statusMessage;
