@@ -32,8 +32,6 @@ class MovieDetails extends ConsumerWidget {
             ], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
         child: movieDetails.when(
             data: (data) {
-              final youtubeTrailerProvider =
-                  StateProvider((ref) => data.youtubeTrailerKey);
               return Column(
                 children: [
                   Stack(
