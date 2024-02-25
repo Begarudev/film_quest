@@ -1,5 +1,7 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:film_quest/services/google_sign_in.dart';
 import 'package:film_quest/services/riverpod.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_stars/flutter_rating_stars.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../model/movie_by_id.dart';
+import '../model/now_playing_movie.dart';
 
 class MovieDetails extends ConsumerWidget {
   const MovieDetails({super.key});
@@ -14,10 +17,57 @@ class MovieDetails extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final String imdbID = ref.watch(movieSelectedProvider);
+    final user = GoogleSignInService().user;
     final images = ref.watch(movieImagesProvider(imdbID));
     final movieDetails = ref.watch(getMoviesByIDProvider(imdbID));
+    final asyncLikeState = ref.watch(asyncLikeStateProvider);
 
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.transparent,
+        onPressed: () {},
+        child: switch (asyncLikeState) {
+          AsyncData(:final value) => IconButton(
+              onPressed: () {
+                value.contains(imdbID)
+                    ? ref
+                        .read(asyncLikeStateProvider.notifier)
+                        .removeLikeState(user!.uid, imdbID)
+                    : ref
+                        .read(asyncLikeStateProvider.notifier)
+                        .addLikeState(user!.uid, imdbID);
+              },
+              icon: value.contains(imdbID)
+                  ? const Icon(
+                      CupertinoIcons.heart_fill,
+                      color: Colors.red,
+                      size: 45,
+                    )
+                  : const Icon(
+                      CupertinoIcons.heart,
+                      color: Colors.red,
+                      size: 45,
+                    )),
+          AsyncError(:final error) => Expanded(child: Text('error: $error')),
+          _ => /* (ref
+                                                  .read(tempListState)
+                                                  .contains(imdbID))
+                                              ? IconButton(
+                                                  onPressed: () {},
+                                                  icon: const Icon(
+                                                      CupertinoIcons
+                                                          .heart_fill),
+                                                  color: Colors.red,
+                                                )
+                                              : */
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(CupertinoIcons.heart),
+              color: Colors.red,
+              iconSize: 45,
+            )
+        },
+      ),
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -72,7 +122,7 @@ class MovieDetails extends ConsumerWidget {
                       IconButton(
                           onPressed: () {
                             launchUrl(Uri.parse(
-                                "https://www.youtube.com/watch?v=${data.youtubeTrailerKey}"));
+                                "https://www.youtube.com/watch?v=${(data.youtubeTrailerKey == null) ? "dQw4w9WgXcQ" : data.youtubeTrailerKey}"));
                           },
                           tooltip: "Play Trailer",
                           icon: const Icon(

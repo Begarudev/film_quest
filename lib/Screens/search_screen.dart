@@ -45,7 +45,7 @@ class SearchScreen extends ConsumerWidget {
                         ? data.movieResults![index].title!
                         : ""),
                     onTap: () {
-                      context.push("/page2");
+                      context.push("/movieDetails");
                       ref
                           .watch(movieSelectedProvider.notifier)
                           .update((state) => data.movieResults![index].imdbId!);

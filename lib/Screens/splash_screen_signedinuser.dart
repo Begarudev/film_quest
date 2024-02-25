@@ -5,8 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../services/riverpod.dart';
 
-class SplashScreen extends ConsumerWidget {
-  const SplashScreen({super.key});
+class SplashScreenSignedInUser extends ConsumerWidget {
+  const SplashScreenSignedInUser({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,27 +34,26 @@ class SplashContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(
-            backgroundBlendMode: BlendMode.darken,
-            gradient: LinearGradient(
-              colors: [
-                Colors.red,
-                Colors.black,
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.center,
-            ),
-          ),
-          child: Center(
-              child: Text(
-            "Welcome Back",
-            style: GoogleFonts.lato(color: Colors.white, fontSize: 40),
-          )),
+    return Container(
+      decoration: const BoxDecoration(
+        backgroundBlendMode: BlendMode.darken,
+        gradient: LinearGradient(
+          colors: [
+            Colors.red,
+            Colors.black,
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.center,
         ),
       ),
+      child: Center(
+          child: DefaultTextStyle(
+        style: GoogleFonts.lato(color: Colors.white, fontSize: 40),
+        child: Text(
+          "Welcome Back",
+          style: GoogleFonts.lato(color: Colors.white, fontSize: 40),
+        ),
+      )),
     );
   }
 }
