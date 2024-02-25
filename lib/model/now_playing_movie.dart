@@ -40,9 +40,9 @@ class NowPlayingMovie {
 }
 
 class MovieResult {
-  final String title;
-  final String year;
-  final String imdbId;
+  final String? title;
+  final String? year;
+  final String? imdbId;
 
   MovieResult({
     required this.title,

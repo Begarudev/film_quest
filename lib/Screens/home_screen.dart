@@ -39,7 +39,9 @@ class HomeScreen extends ConsumerWidget {
                     physics: const PageScrollPhysics(),
                     itemCount: movie.length,
                     itemBuilder: (context, index) {
-                      final String movieId = movie[index].imdbId;
+                      final String movieId = movie[index].imdbId == null
+                          ? 'doesnotexist'
+                          : movie[index].imdbId!;
                       //
                       final movieImage =
                           ref.watch(movieImagesProvider(movieId));
@@ -71,9 +73,10 @@ class HomeScreen extends ConsumerWidget {
                       return GestureDetector(
                         onTap: () {
                           context.push("/HomeScreen/movieDetails");
-                          ref
-                              .watch(movieSelectedProvider.notifier)
-                              .update((state) => movie[index].imdbId);
+                          ref.watch(movieSelectedProvider.notifier).update(
+                              (state) => movie[index].imdbId == null
+                                  ? 'doesnotexist'
+                                  : movie[index].imdbId!);
                         },
                         child: Container(
                           margin: const EdgeInsets.symmetric(
@@ -106,7 +109,9 @@ class HomeScreen extends ConsumerWidget {
                               Column(
                                 children: [
                                   Text(
-                                    movie[index].title,
+                                    movie[index].title == null
+                                        ? "Not Available"
+                                        : movie[index].title!,
                                     style: GoogleFonts.lato(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 18,
@@ -120,7 +125,9 @@ class HomeScreen extends ConsumerWidget {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          movie[index].year,
+                                          movie[index].year == null
+                                              ? '2000'
+                                              : movie[index].year!,
                                           style: GoogleFonts.lato(
                                               color: const Color(0x86DC6565)),
                                         ),

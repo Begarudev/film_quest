@@ -91,22 +91,30 @@ class MovieDetails extends ConsumerWidget {
                           items: [
                             images.when(
                                 data: (data) => Image.network(
-                                      data.poster != null
-                                          ? data.poster!
-                                          : 'https://www.indieactivity.com/wp-content/uploads/2022/03/File-Not-Found-Poster.png',
-                                      gaplessPlayback: true,
-                                    ),
+                                        data.poster != null
+                                            ? data.poster!
+                                            : 'https://www.indieactivity.com/wp-content/uploads/2022/03/File-Not-Found-Poster.png',
+                                        gaplessPlayback: true, errorBuilder:
+                                            (context, error, stackTrace) {
+                                      return Image.network(
+                                          'https://www.indieactivity.com/wp-content/uploads/2022/03/File-Not-Found-Poster.png',
+                                          gaplessPlayback: true);
+                                    }),
                                 error: (error, stackTrace) =>
                                     Center(child: Text('Error: $error')),
                                 loading: () => const Center(
                                     child: CircularProgressIndicator())),
                             images.when(
                                 data: (d) => Image.network(
-                                      d.fanart != null
-                                          ? d.fanart!
-                                          : 'https://www.indieactivity.com/wp-content/uploads/2022/03/File-Not-Found-Poster.png',
-                                      gaplessPlayback: true,
-                                    ),
+                                        d.fanart != null
+                                            ? d.fanart!
+                                            : 'https://www.indieactivity.com/wp-content/uploads/2022/03/File-Not-Found-Poster.png',
+                                        gaplessPlayback: true, errorBuilder:
+                                            (context, error, stackTrace) {
+                                      return Image.network(
+                                          'https://www.indieactivity.com/wp-content/uploads/2022/03/File-Not-Found-Poster.png',
+                                          gaplessPlayback: true);
+                                    }),
                                 error: (error, stackTrace) =>
                                     Center(child: Text('Error: $error')),
                                 loading: () => const Center(
@@ -121,8 +129,9 @@ class MovieDetails extends ConsumerWidget {
                           )),
                       IconButton(
                           onPressed: () {
+                            print(data.youtubeTrailerKey);
                             launchUrl(Uri.parse(
-                                "https://www.youtube.com/watch?v=${(data.youtubeTrailerKey == null) ? "dQw4w9WgXcQ" : data.youtubeTrailerKey}"));
+                                "https://www.youtube.com/watch?v=${(data.youtubeTrailerKey == null || data.youtubeTrailerKey!.isEmpty) ? "dQw4w9WgXcQ" : data.youtubeTrailerKey}"));
                           },
                           tooltip: "Play Trailer",
                           icon: const Icon(
