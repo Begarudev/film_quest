@@ -1,4 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_quest/services/google_sign_in.dart';
 import 'package:film_quest/services/riverpod.dart';
 import 'package:flutter/cupertino.dart';
@@ -11,78 +13,96 @@ import 'package:url_launcher/url_launcher.dart';
 import '../model/movie_by_id.dart';
 import '../model/now_playing_movie.dart';
 
-class MovieDetails extends ConsumerWidget {
+class MovieDetails extends ConsumerStatefulWidget {
   const MovieDetails({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MovieDetails> createState() => _MovieDetailsState();
+}
+
+class _MovieDetailsState extends ConsumerState<MovieDetails> {
+  final uid = GoogleSignInService().user!.uid;
+
+  @override
+  Widget build(BuildContext context) {
     final String imdbID = ref.watch(movieSelectedProvider);
     final user = GoogleSignInService().user;
     final images = ref.watch(movieImagesProvider(imdbID));
     final movieDetails = ref.watch(getMoviesByIDProvider(imdbID));
-    final asyncLikeState = ref.watch(asyncLikeStateProvider);
+    final likeStateRef = db.collection("users").doc(uid).snapshots();
+    // final asyncLikeState = ref.watch(asyncLikeStateProvider);
 
-    return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.transparent,
-        onPressed: () {},
-        child: switch (asyncLikeState) {
-          AsyncData(:final value) => IconButton(
-              onPressed: () {
-                value.contains(imdbID)
-                    ? ref
-                        .read(asyncLikeStateProvider.notifier)
-                        .removeLikeState(user!.uid, imdbID)
-                    : ref
-                        .read(asyncLikeStateProvider.notifier)
-                        .addLikeState(user!.uid, imdbID);
-              },
-              icon: value.contains(imdbID)
-                  ? const Icon(
-                      CupertinoIcons.heart_fill,
-                      color: Colors.red,
-                      size: 45,
-                    )
-                  : const Icon(
-                      CupertinoIcons.heart,
-                      color: Colors.red,
-                      size: 45,
-                    )),
-          AsyncError(:final error) => Expanded(child: Text('error: $error')),
-          _ => /* (ref
-                                                  .read(tempListState)
-                                                  .contains(imdbID))
-                                              ? IconButton(
-                                                  onPressed: () {},
-                                                  icon: const Icon(
-                                                      CupertinoIcons
-                                                          .heart_fill),
-                                                  color: Colors.red,
-                                                )
-                                              : */
-            IconButton(
+    return movieDetails.when(
+        data: (data) {
+          return Scaffold(
+            floatingActionButton: FloatingActionButton(
+              backgroundColor: Colors.transparent,
               onPressed: () {},
-              icon: const Icon(CupertinoIcons.heart),
-              color: Colors.red,
-              iconSize: 45,
-            )
-        },
-      ),
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-      ),
-      body: Container(
-        padding: const EdgeInsets.symmetric(vertical: 40),
-        decoration: const BoxDecoration(
-            backgroundBlendMode: BlendMode.darken,
-            gradient: LinearGradient(colors: [
-              Colors.red,
-              Colors.black,
-            ], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
-        child: movieDetails.when(
-            data: (data) {
-              return Column(
+              child: StreamBuilder(
+                stream: likeStateRef,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    final data = snapshot.data!.data();
+                    final likeList = data!['likedmovies'] ?? [];
+                    return IconButton(
+                        onPressed: () async {
+                          if (likeList.contains(imdbID)) {
+                            try {
+                              await db.collection("users").doc(uid).update({
+                                'likedmovies': FieldValue.arrayRemove([imdbID])
+                              });
+                            } on FirebaseException {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Error liking'),
+                                ),
+                              );
+                            }
+                          } else {
+                            try {
+                              await db.collection("users").doc(uid).update({
+                                'likedmovies': FieldValue.arrayUnion([imdbID])
+                              });
+                            } on FirebaseException {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Error liking post'),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        icon: likeList.contains(imdbID)
+                            ? const Icon(
+                                CupertinoIcons.heart_fill,
+                                color: Colors.red,
+                                size: 45,
+                              )
+                            : const Icon(
+                                CupertinoIcons.heart,
+                                color: Colors.red,
+                                size: 45,
+                              ));
+                  }
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                },
+              ),
+            ),
+            extendBodyBehindAppBar: true,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+            ),
+            body: Container(
+              padding: const EdgeInsets.symmetric(vertical: 40),
+              decoration: const BoxDecoration(
+                  backgroundBlendMode: BlendMode.darken,
+                  gradient: LinearGradient(colors: [
+                    Colors.red,
+                    Colors.black,
+                  ], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
+              child: Column(
                 children: [
                   Stack(
                     alignment: Alignment.bottomRight,
@@ -90,31 +110,24 @@ class MovieDetails extends ConsumerWidget {
                       CarouselSlider(
                           items: [
                             images.when(
-                                data: (data) => Image.network(
-                                        data.poster != null
+                                data: (data) => Hero(
+                                      tag: data.imdb!,
+                                      child: CachedNetworkImage(
+                                        imageUrl: data.poster != null
                                             ? data.poster!
                                             : 'https://www.indieactivity.com/wp-content/uploads/2022/03/File-Not-Found-Poster.png',
-                                        gaplessPlayback: true, errorBuilder:
-                                            (context, error, stackTrace) {
-                                      return Image.network(
-                                          'https://www.indieactivity.com/wp-content/uploads/2022/03/File-Not-Found-Poster.png',
-                                          gaplessPlayback: true);
-                                    }),
+                                      ),
+                                    ),
                                 error: (error, stackTrace) =>
                                     Center(child: Text('Error: $error')),
                                 loading: () => const Center(
                                     child: CircularProgressIndicator())),
                             images.when(
-                                data: (d) => Image.network(
-                                        d.fanart != null
-                                            ? d.fanart!
-                                            : 'https://www.indieactivity.com/wp-content/uploads/2022/03/File-Not-Found-Poster.png',
-                                        gaplessPlayback: true, errorBuilder:
-                                            (context, error, stackTrace) {
-                                      return Image.network(
-                                          'https://www.indieactivity.com/wp-content/uploads/2022/03/File-Not-Found-Poster.png',
-                                          gaplessPlayback: true);
-                                    }),
+                                data: (d) => CachedNetworkImage(
+                                      imageUrl: d.fanart != null
+                                          ? d.fanart!
+                                          : 'https://www.indieactivity.com/wp-content/uploads/2022/03/File-Not-Found-Poster.png',
+                                    ),
                                 error: (error, stackTrace) =>
                                     Center(child: Text('Error: $error')),
                                 loading: () => const Center(
@@ -198,11 +211,12 @@ class MovieDetails extends ConsumerWidget {
                     ),
                   )
                 ],
-              );
-            },
-            error: (error, stackTrace) => Center(child: Text('Error: $error')),
-            loading: () => const Center(child: CircularProgressIndicator())),
-      ),
-    );
+              ),
+            ),
+          );
+        },
+        error: (error, stackTrace) => Center(child: Text('Error: $error')),
+        loading: () => const Hero(
+            tag: 'nowPlay', child: Center(child: CircularProgressIndicator())));
   }
 }

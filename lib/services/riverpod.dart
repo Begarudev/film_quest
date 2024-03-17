@@ -13,7 +13,7 @@ final movieImagesProvider = FutureProvider.family<MovieImage, String>(
     {
       var headers = {
         'Type': 'get-movies-images-by-imdb',
-        'X-RapidAPI-Key': 'c3abde9dc5msh8d4f48500477eb0p1bc3a5jsna701f8b93624',
+        'X-RapidAPI-Key': '2c6bfb5c62mshe3bf1869c1c51b4p1d26e4jsn42b4fe7a404a',
         'X-RapidAPI-Host': 'movies-tv-shows-database.p.rapidapi.com',
       };
 
@@ -31,7 +31,7 @@ final nowMoviesProvider = FutureProvider(
     {
       var headers = {
         'Type': 'get-nowplaying-movies',
-        'X-RapidAPI-Key': 'c3abde9dc5msh8d4f48500477eb0p1bc3a5jsna701f8b93624',
+        'X-RapidAPI-Key': '2c6bfb5c62mshe3bf1869c1c51b4p1d26e4jsn42b4fe7a404a',
         'X-RapidAPI-Host': 'movies-tv-shows-database.p.rapidapi.com',
       };
 
@@ -52,7 +52,7 @@ final getMoviesByNameProvider =
   {
     var headers = {
       'Type': 'get-movies-by-title',
-      'X-RapidAPI-Key': 'c3abde9dc5msh8d4f48500477eb0p1bc3a5jsna701f8b93624',
+      'X-RapidAPI-Key': '2c6bfb5c62mshe3bf1869c1c51b4p1d26e4jsn42b4fe7a404a',
       'X-RapidAPI-Host': 'movies-tv-shows-database.p.rapidapi.com',
     };
 
@@ -71,7 +71,7 @@ final getMoviesByIDProvider =
   {
     var headers = {
       'Type': 'get-movie-details',
-      'X-RapidAPI-Key': 'c3abde9dc5msh8d4f48500477eb0p1bc3a5jsna701f8b93624',
+      'X-RapidAPI-Key': '2c6bfb5c62mshe3bf1869c1c51b4p1d26e4jsn42b4fe7a404a',
       'X-RapidAPI-Host': 'movies-tv-shows-database.p.rapidapi.com',
     };
 
@@ -91,7 +91,7 @@ class MovieRepository {
     {
       var headers = {
         'Type': 'get-movies-by-title',
-        'X-RapidAPI-Key': 'c3abde9dc5msh8d4f48500477eb0p1bc3a5jsna701f8b93624',
+        'X-RapidAPI-Key': '2c6bfb5c62mshe3bf1869c1c51b4p1d26e4jsn42b4fe7a404a',
         'X-RapidAPI-Host': 'movies-tv-shows-database.p.rapidapi.com',
       };
 

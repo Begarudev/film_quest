@@ -12,7 +12,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   SystemChrome.setPreferredOrientations(
-      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+    [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown],
+  );
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -21,32 +22,33 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isUserSignedIn = ref.watch(userProvider);
+    // final isUserSignedIn = ref.watch(userProvider);
     return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-                seedColor: Colors.black,
-                brightness: Brightness.dark,
-                onPrimary: Colors.red)),
-        home: ref.watch(userProvider).when(
-          data: (data) {
-            return (data == null)
-                ? const SplashScreenNewUser()
-                : const SplashScreenSignedInUser();
-          },
-          error: (error, stackTrace) {
-            showDialog(
-              context: context,
-              builder: (context) => Center(
-                child: Text("Error: $error"),
-              ),
-            );
-            return const SplashScreenNewUser();
-          },
-          loading: () {
-            return const CircularProgressIndicator();
-          },
-        ));
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.black,
+          brightness: Brightness.dark,
+          onPrimary: Colors.red,
+        ),
+      ),
+      home: ref.watch(userProvider).when(
+        data: (data) {
+          return (data == null)
+              ? const SplashScreenNewUser()
+              : const SplashScreenSignedInUser();
+        },
+        error: (error, stackTrace) {
+          showDialog(
+            context: context,
+            builder: (context) => Center(child: Text("Error: $error")),
+          );
+          return const SplashScreenNewUser();
+        },
+        loading: () {
+          return const CircularProgressIndicator();
+        },
+      ),
+    );
   }
 }

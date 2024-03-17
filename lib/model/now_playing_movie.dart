@@ -5,8 +5,6 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:film_quest/services/google_sign_in.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final db = FirebaseFirestore.instance;
 
@@ -77,64 +75,64 @@ class MovieResult {
 //       <String, dynamic>{'likeState': likeState};
 // }
 
-class AsyncMovieLikedNotifier extends AsyncNotifier<List<String>> {
-  Future<List<String>> _getLikeState(String userUID) async {
-    final likeStateRef =
-        await db.collection("users").doc(userUID).collection('movies').get();
-
-    final likeStateSnap = likeStateRef.docs.map((e) => e.id).toList();
-    return likeStateSnap;
-  }
-
-  @override
-  Future<List<String>> build() async {
-    return _getLikeState(GoogleSignInService().user!.uid);
-  }
-
-  void defState(String userUID, String imdbID) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      db
-          .collection("users")
-          .doc(userUID)
-          .collection('movies')
-          .doc(imdbID)
-          .set({});
-
-      return _getLikeState(userUID);
-    });
-  }
-
-  void addLikeState(String userUID, String imdbID) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      db
-          .collection("users")
-          .doc(userUID)
-          .collection('movies')
-          .doc(imdbID)
-          .set({});
-
-      return _getLikeState(userUID);
-    });
-  }
-
-  void removeLikeState(String userUID, String imdbID) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      db
-          .collection("users")
-          .doc(userUID)
-          .collection('movies')
-          .doc(imdbID)
-          .delete();
-
-      return _getLikeState(userUID);
-    });
-  }
-}
-
-final asyncLikeStateProvider =
-    AsyncNotifierProvider<AsyncMovieLikedNotifier, List<String>>(() {
-  return AsyncMovieLikedNotifier();
-});
+// class AsyncMovieLikedNotifier extends AsyncNotifier<List<String>> {
+//   Future<List<String>> _getLikeState(String userUID) async {
+//     final likeStateRef =
+//         await db.collection("users").doc(userUID).collection('movies').get();
+//
+//     final likeStateSnap = likeStateRef.docs.map((e) => e.id).toList();
+//     return likeStateSnap;
+//   }
+//
+//   @override
+//   Future<List<String>> build() async {
+//     return _getLikeState(GoogleSignInService().user!.uid);
+//   }
+//
+//   void defState(String userUID, String imdbID) async {
+//     state = const AsyncValue.loading();
+//     state = await AsyncValue.guard(() async {
+//       db
+//           .collection("users")
+//           .doc(userUID)
+//           .collection('movies')
+//           .doc(imdbID)
+//           .set({});
+//
+//       return _getLikeState(userUID);
+//     });
+//   }
+//
+//   void addLikeState(String userUID, String imdbID) async {
+//     state = const AsyncValue.loading();
+//     state = await AsyncValue.guard(() async {
+//       db
+//           .collection("users")
+//           .doc(userUID)
+//           .collection('movies')
+//           .doc(imdbID)
+//           .set({});
+//
+//       return _getLikeState(userUID);
+//     });
+//   }
+//
+//   void removeLikeState(String userUID, String imdbID) async {
+//     state = const AsyncValue.loading();
+//     state = await AsyncValue.guard(() async {
+//       db
+//           .collection("users")
+//           .doc(userUID)
+//           .collection('movies')
+//           .doc(imdbID)
+//           .delete();
+//
+//       return _getLikeState(userUID);
+//     });
+//   }
+// }
+//
+// final asyncLikeStateProvider =
+//     AsyncNotifierProvider<AsyncMovieLikedNotifier, List<String>>(() {
+//   return AsyncMovieLikedNotifier();
+// });

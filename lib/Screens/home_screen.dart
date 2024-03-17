@@ -1,29 +1,39 @@
 import 'dart:ui';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_quest/model/now_playing_movie.dart';
 import 'package:film_quest/services/google_sign_in.dart';
 import 'package:film_quest/services/riverpod.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final uid = GoogleSignInService().user!.uid;
+
+  final likeStateRef =
+      db.collection("users").doc(GoogleSignInService().user!.uid).snapshots();
+
+  @override
+  Widget build(BuildContext context) {
     final user = GoogleSignInService().user;
     final nowPlayingMovies = ref.watch(nowMoviesProvider);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        leading: null,
-        toolbarHeight: 130,
-        title: SearchBarCustom(user),
-      ),
+          leading: null, toolbarHeight: 130, title: SearchBarCustom(user)),
       body: nowPlayingMovies.when(
           data: (data) {
             final movie = data.movieResults;
@@ -39,148 +49,172 @@ class HomeScreen extends ConsumerWidget {
                     physics: const PageScrollPhysics(),
                     itemCount: movie.length,
                     itemBuilder: (context, index) {
+                      ref.watch(getMoviesByIDProvider(movie[index].imdbId!));
+
                       final String movieId = movie[index].imdbId == null
-                          ? 'doesnotexist'
+                          ? 'nonexistent'
                           : movie[index].imdbId!;
-                      //
                       final movieImage =
                           ref.watch(movieImagesProvider(movieId));
-                      //
-                      // final isLikedProvider = FutureProvider((ref) => FirebaseFirestore.instance
-                      //     .collection('users')
-                      //     .doc(user!.uid)
-                      //     .collection('movies')
-                      //     .doc(movieId)
-                      //     .get());
-                      //
-                      // final isTick = ref.read(isLikedProvider).when(
-                      //       data: (doc) => doc.data() != null ? doc.data()!['isLiked'] : false,
-                      //       error: (error, stackTrace) => false,
-                      //       loading: () => false,
-                      //     );
-                      // ref
-                      //     .watch(movie[index].likeStateProvider.notifier)
-                      //     .update((state) => isTick);
-
-                      final asyncLikeState = ref.watch(asyncLikeStateProvider);
-                      // final tempListState = StateProvider(
-                      //     (ref) => ref.read(asyncLikeStateProvider).when(
-                      //           data: (data) => data,
-                      //           error: (error, stackTrace) => [error],
-                      //           loading: () => [],
-                      //         ));
 
                       return GestureDetector(
                         onTap: () {
                           context.push("/HomeScreen/movieDetails");
                           ref.watch(movieSelectedProvider.notifier).update(
                               (state) => movie[index].imdbId == null
-                                  ? 'doesnotexist'
+                                  ? 'nonexistent'
                                   : movie[index].imdbId!);
                         },
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 10),
-                          child: Column(
-                            children: [
-                              // Text(movie[index].imdbId),
-                              Expanded(
-                                child: movieImage.when(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 10),
+                            child: Column(
+                              children: [
+                                // Text(movie[index].imdbId),
+                                Expanded(
+                                  child: movieImage.when(
                                     data: (data) {
-                                      return Image.network(
-                                        data.poster != null
-                                            ? data.poster!
-                                            : 'https://www.indieactivity.com/wp-content/uploads/2022/03/File-Not-Found-Poster.png',
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                          return Image.network(
-                                              'https://www.indieactivity.com/wp-content/uploads/2022/03/File-Not-Found-Poster.png',
-                                              gaplessPlayback: true);
-                                        },
-                                        gaplessPlayback: true,
-                                        colorBlendMode: BlendMode.lighten,
+                                      return Hero(
+                                        tag: data.imdb!,
+                                        child: CachedNetworkImage(
+                                          imageUrl: data.poster != null
+                                              ? data.poster!
+                                              : 'https://www.indieactivity.com/wp-content/uploads/2022/03/File-Not-Found-Poster.png',
+                                          // colorBlendMode: BlendMode.lighten,
+                                        ),
                                       );
                                     },
                                     error: (error, stackTrace) =>
                                         Center(child: Text('Error: $error')),
-                                    loading: () => const Center(
-                                        child: CircularProgressIndicator())),
-                              ),
-                              Column(
-                                children: [
-                                  Text(
-                                    movie[index].title == null
-                                        ? "Not Available"
-                                        : movie[index].title!,
-                                    style: GoogleFonts.lato(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                        color: Colors.redAccent),
-                                    softWrap: false,
-                                    overflow: TextOverflow.fade,
-                                    textAlign: TextAlign.center,
+                                    loading: () => Expanded(
+                                      child: Container(
+                                        color: Colors.white10,
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.45,
+                                      )
+                                          .animate(
+                                            onPlay: (controller) =>
+                                                controller.repeat(),
+                                          )
+                                          .shimmer(
+                                              color: Colors.black,
+                                              duration: const Duration(
+                                                  milliseconds: 1000)),
+                                    ),
                                   ),
-                                  Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          movie[index].year == null
-                                              ? '2000'
-                                              : movie[index].year!,
-                                          style: GoogleFonts.lato(
-                                              color: const Color(0x86DC6565)),
-                                        ),
-                                        switch (asyncLikeState) {
-                                          AsyncData(:final value) => IconButton(
-                                              onPressed: () {
-                                                value.contains(movieId)
-                                                    ? ref
-                                                        .read(
-                                                            asyncLikeStateProvider
-                                                                .notifier)
-                                                        .removeLikeState(
-                                                            user!.uid, movieId)
-                                                    : ref
-                                                        .read(
-                                                            asyncLikeStateProvider
-                                                                .notifier)
-                                                        .addLikeState(
-                                                            user!.uid, movieId);
-                                              },
-                                              icon: value.contains(movieId)
-                                                  ? const Icon(
-                                                      CupertinoIcons.heart_fill,
-                                                      color: Colors.red,
-                                                    )
-                                                  : const Icon(
-                                                      CupertinoIcons.heart,
-                                                      color: Colors.red,
-                                                    )),
-                                          AsyncError(:final error) => Expanded(
-                                              child: Text('error: $error')),
-                                          _ => /* (ref
-                                                  .read(tempListState)
-                                                  .contains(movieId))
-                                              ? IconButton(
-                                                  onPressed: () {},
-                                                  icon: const Icon(
-                                                      CupertinoIcons
-                                                          .heart_fill),
-                                                  color: Colors.red,
-                                                )
-                                              : */
-                                            IconButton(
-                                              onPressed: () {},
-                                              icon: const Icon(
-                                                  CupertinoIcons.heart),
-                                              color: Colors.red,
-                                            )
-                                        },
-                                      ]),
-                                ],
-                              )
-                            ],
+                                ),
+                                Column(
+                                  children: [
+                                    Text(
+                                      movie[index].title == null
+                                          ? "Not Available"
+                                          : movie[index].title!,
+                                      style: GoogleFonts.lato(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
+                                          color: Colors.redAccent),
+                                      softWrap: false,
+                                      overflow: TextOverflow.fade,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            movie[index].year == null
+                                                ? '2000'
+                                                : movie[index].year!,
+                                            style: GoogleFonts.lato(
+                                                color: const Color(0x86DC6565)),
+                                          ),
+                                          StreamBuilder(
+                                            stream: likeStateRef,
+                                            builder: (context, snapshot) {
+                                              if (snapshot.hasData) {
+                                                final data =
+                                                    snapshot.data!.data();
+                                                final likeList =
+                                                    data!['likedmovies'] ?? [];
+                                                return IconButton(
+                                                    onPressed: () async {
+                                                      if (likeList
+                                                          .contains(movieId)) {
+                                                        try {
+                                                          await db
+                                                              .collection(
+                                                                  "users")
+                                                              .doc(uid)
+                                                              .update({
+                                                            'likedmovies':
+                                                                FieldValue
+                                                                    .arrayRemove([
+                                                              movieId
+                                                            ])
+                                                          });
+                                                        } on FirebaseException {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                            const SnackBar(
+                                                              content: Text(
+                                                                  'Error liking'),
+                                                            ),
+                                                          );
+                                                        }
+                                                      } else {
+                                                        try {
+                                                          await db
+                                                              .collection(
+                                                                  "users")
+                                                              .doc(uid)
+                                                              .update({
+                                                            'likedmovies':
+                                                                FieldValue
+                                                                    .arrayUnion([
+                                                              movieId
+                                                            ])
+                                                          });
+                                                        } on FirebaseException {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                            const SnackBar(
+                                                              content: Text(
+                                                                  'Error liking post'),
+                                                            ),
+                                                          );
+                                                        }
+                                                      }
+                                                    },
+                                                    icon: likeList
+                                                            .contains(movieId)
+                                                        ? const Icon(
+                                                            CupertinoIcons
+                                                                .heart_fill,
+                                                            color: Colors.red,
+                                                          )
+                                                        : const Icon(
+                                                            CupertinoIcons
+                                                                .heart,
+                                                            color: Colors.red,
+                                                          ));
+                                              }
+
+                                              return const Center(
+                                                child:
+                                                    Icon(CupertinoIcons.heart),
+                                              );
+                                            },
+                                          )
+                                        ]),
+                                  ],
+                                )
+                              ],
+                            ),
                           ),
                         ),
                       );
@@ -204,6 +238,7 @@ class HomeScreen extends ConsumerWidget {
 
 class SearchBarCustom extends ConsumerWidget {
   final user;
+
   const SearchBarCustom(
     this.user, {
     super.key,
@@ -257,7 +292,8 @@ class SearchBarCustom extends ConsumerWidget {
                                   minRadius: 40,
                                   child: (userProfile != null)
                                       ? ClipOval(
-                                          child: Image.network(userProfile))
+                                          child: CachedNetworkImage(
+                                              imageUrl: userProfile))
                                       : const Center(child: Text("No Image")),
                                 ),
                                 RichText(
@@ -320,15 +356,18 @@ class SearchBarCustom extends ConsumerWidget {
                 );
               },
             ),
-            IconButton(
-                onPressed: () {
-                  context.push('/HomeScreen/likedMovies');
-                },
-                icon: const Icon(
-                  CupertinoIcons.heart_fill,
-                  color: Colors.red,
-                  size: 30,
-                ))
+            Hero(
+              tag: 'FavouriteMovies',
+              child: IconButton(
+                  onPressed: () {
+                    context.push('/HomeScreen/likedMovies');
+                  },
+                  icon: const Icon(
+                    CupertinoIcons.heart_fill,
+                    color: Colors.red,
+                    size: 30,
+                  )),
+            )
           ],
         ),
         Container(
